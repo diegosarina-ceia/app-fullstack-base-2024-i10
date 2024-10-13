@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 3.0.0
+
+
+### Added
+- Implementación de la API REST para la gestión de dispositivos:
+  - **GET** `/device/:id`: Obtener un dispositivo por su ID.
+  - **GET** `/devices`: Obtener todos los dispositivos disponibles.
+  - **POST** `/device`: Agregar un nuevo dispositivo al panel.
+  - **PUT** `/device/:id`: Actualizar un dispositivo existente en el panel.
+  - **PATCH** `/device/:id/state`: Actualizar el estado de un dispositivo en el panel.
+  - **DELETE** `/device/:id`: Eliminar un dispositivo del panel.
+  - **GET** `/deviceTypes`: Obtener tipos de dispositivos.
+  - **GET** `/devices/type/:typeId`: Obtener dispositivos por tipo.
+  - **GET** `/devices/count`: Obtener el número total de dispositivos en el panel.
+- Reestructuración completa del frontend, mejorando la interfaz de usuario y la experiencia del usuario. Se han implementado nuevos componentes y una navegación más intuitiva.
+
+### Changed
+- Se ha implementado el manejo de errores para las consultas a la base de datos, devolviendo mensajes claros en caso de fallos.
+- Se ha añadido la validación de parámetros para asegurar que se reciben datos correctos en las solicitudes.
+- Mejora en el rendimiento de la aplicación gracias a la optimización de las consultas a la base de datos.
+
+### Fixed
+- Corrección de la lógica de validación para asegurar que los valores numéricos son válidos y no nulos.
+- Se han solucionado varios errores menores en el frontend que afectaban la usabilidad.
 
 ## 2.2.0
 
