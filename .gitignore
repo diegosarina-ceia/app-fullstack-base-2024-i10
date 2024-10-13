@@ -90,4 +90,6 @@ typings/
 db/data/
 src/frontend/js
 
-
+.DS_Store
+*.DS_Store
+.vscode
