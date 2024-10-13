@@ -15,7 +15,7 @@ Realizando estas tareas vas a a tener una aplicación fullstack IoT del mundo re
 
 En esta imagen podés ver una posible implementación del cliente web que controla los artefactos del hogar.
 
-![architecture](doc/webapp-example-1.png)
+![architecture](doc/image.png)
 
 ## Comenzando 🚀
 
@@ -41,19 +41,23 @@ Para descargar el código, lo más conveniente es que realices un `fork` de este
 git clone https://github.com/USER/app-fullstack-base.git
 ```
 
-> En caso que no tengas una cuenta en Github podes clonar directamente este repo.
+>En caso que no tengas una cuenta en Github podes clonar directamente este repo.
 
 ### Ejecutar la aplicación
 
-Para ejecutar la aplicación tenes que correr el comando `docker-compose up` desde la raíz del proyecto. Este comando va a descargar las imágenes de Docker de node, de typescript, de la base datos y del admin de la DB, y luego ponerlas en funcionamiento. 
+Para ejecutar la aplicación tenes que correr el comando:
+
+```
+docker compose up -d
+```
+desde la raíz del proyecto. Este comando va a descargar las imágenes de Docker de node, de typescript, de la base datos y del admin de la DB, y luego ponerlas en funcionamiento. 
 
 Para acceder al cliente web ingresa a a la URL [http://localhost:8000/](http://localhost:8000/) y para acceder al admin de la DB accedé a [localhost:8001/](http://localhost:8001/). 
 
 Si pudiste acceder al cliente web y al administrador significa que la aplicación se encuentra corriendo bien. 
 
-> Si te aparece un error la primera vez que corres la app, deteńe el proceso y volvé a iniciarla. Esto es debido a que el backend espera que la DB esté creada al iniciar, y en la primera ejecución puede no alcanzar a crearse. A partir de la segunda vez el problema queda solucionado.
-
 </details>
+
 
 Continuá explorando el proyecto una vez que lo tengas funcionando.
 
@@ -156,41 +160,433 @@ En esta sección podés ver los detalles específicos de funcionamiento del cód
 
 <details><summary><b>Mira los detalles de implementación</b></summary><br>
 
-### Agregar un dispositivo
+### Agregar un Dispositivo
+Para agregar un nuevo dispositivo, sigue estos pasos:
 
-Completá los pasos para agregar un dispositivo desde el cliente web.
+1. **Presiona el botón "AGREGAR DISPOSITIVO"**: Esto abrirá un panel de registro.
+2. **Completa los datos del dispositivo**: En el panel, ingresa la siguiente información:
+   - **Nombre del Dispositivo**: Asigna un nombre que identifique al dispositivo.
+   - **Descripción del Dispositivo**: Proporciona una breve descripción de su función o características.
+   - **Tipo de Dispositivo**: Selecciona el tipo de dispositivo en el menú desplegable "Tipo de Dispositivo".
+3. **Guardar o Cancelar**: Una vez completados los campos, puedes presionar el botón "Guardar" para registrar el dispositivo o "Cancelar" si deseas volver atrás sin realizar cambios.
+
+### Editar o Eliminar un Dispositivo
+Para modificar o eliminar un dispositivo existente:
+
+- **Editar**: Presiona el botón "EDITAR" en la tarjeta del dispositivo correspondiente. Esto abrirá un diálogo similar al de la creación del dispositivo, donde podrás hacer las modificaciones necesarias. Guarda los cambios al finalizar.
+  
+- **Eliminar**: Si deseas eliminar un dispositivo, simplemente haz clic en el botón "ELIMINAR" en la tarjeta del dispositivo. Ten en cuenta que esta acción es irreversible y eliminará el dispositivo permanentemente.
 
 ### Frontend
 
-Completá todos los detalles sobre cómo armaste el frontend, sus interacciones, etc.
+#### Interfaz de Usuario y Comunicación con el Servidor
 
-### Backend
+##### Descripción General
+Esta aplicación cuenta con un frontend desarrollado en **TypeScript** y utiliza la librería **Materialize** para la creación de la interfaz visual. El diseño es el de una Single Page Application (SPA), lo que asegura una experiencia fluida para el usuario, evitando recargas de página completas al interactuar con el servidor.
 
-Completá todos los detalles de funcionamiento sobre el backend, sus interacciones con el cliente web, la base de datos, etc.
+##### Estructura de la Aplicación
+
+###### Diseño de la Interfaz
+La interfaz está creada usando **Materialize**, una librería que facilita el uso de componentes estilizados, como formularios, tarjetas y controles deslizantes, asegurando un diseño adaptable a diferentes tamaños de pantalla. El enfoque es hacer la aplicación funcional y accesible tanto en navegadores de escritorio como en dispositivos móviles, optimizando la experiencia en ambos.
+
+#### Manejo de Eventos
+Para gestionar los eventos, se utiliza una clase principal que sigue el patrón `EventListenerObject`. Aquí, toda la lógica de los eventos se centraliza para un manejo más eficiente. Los eventos son capturados mediante `addEventListener` y gestionados en el método `handleEvent`. Entre las acciones que se controlan a través de esta lógica están:
+- Actualización de estados de los dispositivos.
+- Registro de nuevos dispositivos.
+- Modificación de dispositivos existentes.
+- Eliminación de dispositivos.
+
+#### Comunicación con el Backend
+La aplicación se comunica con el servidor utilizando la API `fetch`. Esta configuración permite realizar solicitudes HTTP asincrónicas y manejar respuestas en formato **JSON**. A continuación se describen las solicitudes principales que se realizan:
+
+- **GET**: Para obtener la lista de dispositivos y sus tipos.
+- **POST**: Para crear un nuevo dispositivo.
+- **PUT**: Para actualizar los datos de un dispositivo existente.
+- **PATCH**: Para cambiar el estado de un dispositivo.
+- **DELETE**: Para eliminar un dispositivo.
+
+Ejemplo de una función de solicitud utilizando `fetch`:
+
+```typescript
+const BASE_URL = 'http://localhost:8000';
+
+async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+}
+
+async function getDevices(): Promise<Device[]> {
+    return fetchJson<Device[]>(`${BASE_URL}/devices`);
+}
+```
+
+### Funcionalidades Principales
+
+#### Visualización de Dispositivos
+Los dispositivos disponibles se presentan en una cuadrícula de tarjetas. Cada tarjeta contiene la información clave de un dispositivo, como su nombre, descripción y estado actual.
+
+#### Modificación de Dispositivos
+Los dispositivos pueden ser modificados fácilmente haciendo clic en el botón "Editar" correspondiente. Al hacerlo, se despliega un panel donde se pueden ajustar los atributos del dispositivo.
+
+#### Control de Estados
+Para los dispositivos que permiten ajustar su estado, se incluye un control deslizante que permite cambiar su valor entre 0 y 1. Los cambios realizados en el estado se envían al servidor para su actualización.
+
+#### Agregar y Eliminar Dispositivos
+La aplicación permite añadir nuevos dispositivos desde un panel dedicado, además de brindar la opción de eliminar dispositivos existentes. Al eliminar un dispositivo, se solicita confirmación por parte del usuario para evitar eliminaciones accidentales.
+
+## Backend
+
+El backend está desarrollado utilizando **Node.js** y **Express** para gestionar las solicitudes HTTP. La base de datos utilizada es **MySQL**, y se conecta mediante un módulo personalizado (`mysql-connector`). Los datos se intercambian en formato **JSON** para facilitar la integración con el frontend.
+
+### Estructura del Backend
+
+- **Node.js y Express**: Se encarga de manejar las rutas y las solicitudes HTTP.
+- **Base de datos MySQL**: Los datos de los dispositivos y sus tipos se almacenan en una base de datos MySQL.
+- **Módulo personalizado**: El archivo `mysql-connector.js` gestiona las conexiones y consultas a la base de datos.
+- **Manejo de errores**: El backend devuelve códigos de error HTTP estándar y mensajes de error informativos si ocurre algún problema en las solicitudes.
+
+### Endpoints Disponibles
 
 <details><summary><b>Ver los endpoints disponibles</b></summary><br>
 
-Completá todos los endpoints del backend con los metodos disponibles, los headers y body que recibe, lo que devuelve, ejemplos, etc.
-
-1) Devolver el estado de los dispositivos.
+#### 1. Obtener todos los dispositivos
 
 ```json
 {
-    "method": "get",
-    "request_headers": "application/json",
+    "method": "GET",
+    "endpoint": "/devices",
+    "description": "Obtiene una lista de todos los dispositivos disponibles.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
     "request_body": "",
     "response_code": 200,
-    "request_body": {
-        "devices": [
+    "response_body": [
+        {
+            "id": 1,
+            "name": "Lámpara de cocina",
+            "description": "Luz principal de la cocina",
+            "state": 0,
+            "typeId": 2
+        }
+    ],
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "GET /devices",
+        "response": [
             {
                 "id": 1,
-                "status": true,
-                "description": "Kitchen light"
+                "name": "Lámpara de cocina",
+                "description": "Luz principal de la cocina",
+                "state": 0,
+                "typeId": 2
             }
         ]
-    },
+    }
 }
-``` 
+```
+
+#### 2. Obtener un dispositivo por ID
+
+```json
+{
+    "method": "GET",
+    "endpoint": "/device/:id",
+    "description": "Obtiene un dispositivo específico basado en el ID proporcionado.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
+    "request_body": "",
+    "response_code": 200,
+    "response_body": {
+        "id": 1,
+        "name": "Lámpara de cocina",
+        "description": "Luz principal de la cocina"
+    },
+    "response_code_error": 400,
+    "response_body_error": {
+        "error": "Número de ID no válido"
+    },
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "GET /device/1",
+        "response": {
+            "id": 1,
+            "name": "Lámpara de cocina",
+            "description": "Luz principal de la cocina"
+        }
+    }
+}
+
+```
+#### 3. Agregar un nuevo dispositivo
+
+```json
+{
+    "method": "POST",
+    "endpoint": "/device",
+    "description": "Crea un nuevo dispositivo con los datos proporcionados.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
+    "request_body": {
+        "name": "Nuevo dispositivo",
+        "description": "Descripción del dispositivo",
+        "typeId": 1
+    },
+    "response_code": 201,
+    "response_body": {
+        "id": 2,
+        "name": "Nuevo dispositivo",
+        "description": "Descripción del dispositivo",
+        "state": 0,
+        "typeId": 1
+    },
+    "response_code_error": 400,
+    "response_body_error": {
+        "error": "Parámetros inválidos"
+    },
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "POST /device",
+        "response": {
+            "id": 2,
+            "name": "Nuevo dispositivo",
+            "description": "Descripción del dispositivo",
+            "state": 0,
+            "typeId": 1
+        }
+    }
+}
+```
+
+#### 4. Actualizar un dispositivo existente
+
+```json
+{
+    "method": "PUT",
+    "endpoint": "/device/:id",
+    "description": "Actualiza los detalles de un dispositivo existente.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
+    "request_body": {
+        "name": "Nombre actualizado",
+        "description": "Descripción actualizada",
+        "typeId": 2
+    },
+    "response_code": 200,
+    "response_body": {
+        "id": 1,
+        "name": "Nombre actualizado",
+        "description": "Descripción actualizada",
+        "state": 0,
+        "typeId": 2
+    },
+    "response_code_error": 400,
+    "response_body_error": {
+        "error": "Parámetros inválidos"
+    },
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "PUT /device/1",
+        "response": {
+            "id": 1,
+            "name": "Nombre actualizado",
+            "description": "Descripción actualizada",
+            "state": 0,
+            "typeId": 2
+        }
+    }
+}
+```
+#### 5. Actualizar el estado de un dispositivo
+
+```json
+{
+    "method": "PATCH",
+    "endpoint": "/device/:id/state",
+    "description": "Actualiza el estado de un dispositivo específico.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
+    "request_body": {
+        "state": 1
+    },
+    "response_code": 200,
+    "response_body": {
+        "message": "Estado actualizado exitosamente"
+    },
+    "response_code_error": 400,
+    "response_body_error": {
+        "error": "Parámetros inválidos"
+    },
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "PATCH /device/1/state",
+        "response": {
+            "message": "Estado actualizado exitosamente"
+        }
+    }
+}
+
+```
+#### 6. Eliminar un dispositivo
+
+```json
+{
+    "method": "DELETE",
+    "endpoint": "/device/:id",
+    "description": "Elimina un dispositivo existente basado en su ID.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
+    "request_body": "",
+    "response_code": 200,
+    "response_body": {
+        "message": "Dispositivo eliminado"
+    },
+    "response_code_error": 400,
+    "response_body_error": {
+        "error": "ID de dispositivo no válido"
+    },
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "DELETE /device/1",
+        "response": {
+            "message": "Dispositivo eliminado"
+        }
+    }
+}
+
+```
+#### 7. Obtener tipos de dispositivos
+
+```json
+{
+    "method": "GET",
+    "endpoint": "/deviceTypes",
+    "description": "Obtiene la lista de todos los tipos de dispositivos disponibles.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
+    "request_body": "",
+    "response_code": 200,
+    "response_body": [
+        {
+            "id": 1,
+            "name": "Tipo A",
+            "material_icon_name": "lightbulb"
+        }
+    ],
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "GET /deviceTypes",
+        "response": [
+            {
+                "id": 1,
+                "name": "Tipo A",
+                "material_icon_name": "lightbulb"
+            }
+        ]
+    }
+}
+
+```
+
+#### 8. Obtener dispositivos por tipo
+
+```
+{
+    "method": "GET",
+    "endpoint": "/devices/type/:typeId",
+    "description": "Obtiene todos los dispositivos de un tipo específico.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
+    "request_body": "",
+    "response_code": 200,
+    "response_body": [
+        {
+            "id": 1,
+            "name": "Dispositivo 1",
+            "description": "Descripción del dispositivo",
+            "state": 0,
+            "typeId": 1
+        }
+    ],
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "GET /devices/type/1",
+        "response": [
+            {
+                "id": 1,
+                "name": "Dispositivo 1",
+                "description": "Descripción del dispositivo",
+                "state": 0,
+                "typeId": 1
+            }
+        ]
+    }
+}
+
+```
+
+#### 9. Obtener el número total de dispositivos
+
+```json
+{
+    "method": "GET",
+    "endpoint": "/devices/count",
+    "description": "Obtiene el número total de dispositivos.",
+    "request_headers": {
+        "Content-Type": "application/json"
+    },
+    "request_body": "",
+    "response_code": 200,
+    "response_body": {
+        "count": 10
+    },
+    "response_code_error": 500,
+    "response_body_error": {
+        "error": "Error en la base de datos"
+    },
+    "example": {
+        "request": "GET /devices/count",
+        "response": {
+            "count": 10
+        }
+    }
+}
+
+```
 
 </details>
 
