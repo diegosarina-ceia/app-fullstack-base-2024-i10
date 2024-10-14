@@ -54,7 +54,10 @@ desde la raíz del proyecto. Este comando va a descargar las imágenes de Docker
 
 Para acceder al cliente web ingresa a a la URL [http://localhost:8000/](http://localhost:8000/) y para acceder al admin de la DB accedé a [localhost:8001/](http://localhost:8001/). 
 
-Si pudiste acceder al cliente web y al administrador significa que la aplicación se encuentra corriendo bien. 
+Si pudiste acceder al cliente web y al administrador significa que la aplicación se encuentra corriendo bien.
+
+>NOTA: otorgue permisos de ejecución al script `wait-for-it.sh`. Esto puede hacerlo corriendo el comando `chmod +x wait-for-it.sh`
+
 
 </details>
 
